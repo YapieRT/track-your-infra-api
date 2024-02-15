@@ -9,7 +9,7 @@ const secretKey = 'SecretTrack';
 
 const insertRegistrationData = async (data) => {
   try {
-    const result = await UserModel.create(data);
+    await UserModel.create(data);
   } catch (err) {
     console.log(err);
   }
