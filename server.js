@@ -1,9 +1,9 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import winston from 'winston';
 
-import * as userController from './controllers/userController.js';
-import * as validator from './validation/validator.js';
+import apiRouter from './src/routes/index.js';
 
 import { connectDB } from './db.js';
 
@@ -18,25 +18,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 8080;
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
 
-// JWT verify
-
-app.get('/api/UserAuth', userController.userAuth);
-
-// Log In
-
-app.post('/api/login', validator.loginValidator(), userController.login);
-
-// Registration new user
-
-app.post('/api/registration', validator.registrationValidator(), userController.registration);
+app.use('/api/', apiRouter);
 
 // Listening
 
+const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, (err) => {
-  console.log(`Server listening on port ${PORT}...`);
+  logger.info(`Server listening on port ${PORT}...`);
   if (err) {
-    return console.log(err);
+    return logger.info(err);
   }
 });

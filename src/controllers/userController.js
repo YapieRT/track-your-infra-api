@@ -1,17 +1,24 @@
-import UserModel from '../mongoose/models/UserModel.js';
+import UserModel from '../database/models/UserModel.js';
 
 import { validationResult } from 'express-validator';
 
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import winston from 'winston';
 
-const secretKey = 'SecretTrack';
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+const secretKey = process.env.secretKey || 'SecretTrack';
 
 const insertRegistrationData = async (data) => {
   try {
     await UserModel.create(data);
   } catch (err) {
-    console.log(err);
+    logger.info(err);
   }
 };
 
@@ -46,23 +53,23 @@ export const userAuth = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    console.log(`Attempt to login:`);
-    console.dir(req.body);
+    logger.info(`Attempt to login:`);
+    logger.info(req.body);
 
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const postData = req.body;
+    const { email, password } = req.body;
 
-    if (await loginVerify(postData.email, postData.password)) {
-      const email = postData.email;
+    if (await loginVerify(email, password)) {
+      const email = email;
       const token = jwt.sign({ email }, secretKey, { expiresIn: 3600 });
 
       return res.status(200).json({ auth: true, token: token });
     } else return res.status(400).json({ message: 'Login Failed(wrong password or email).' });
   } catch (err) {
-    console.log(err);
+    logger.info(err);
     res.status(500).json({
       message: 'Login failed',
     });
@@ -71,32 +78,30 @@ export const login = async (req, res) => {
 
 export const registration = async (req, res) => {
   try {
-    console.log(`Attempt to register:`);
-    console.dir(req.body);
+    logger.info(`Attempt to register:`);
+    logger.info(req.body);
 
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const postData = req.body;
+    const { email, password } = req.body;
 
-    if (await doesUserExists(postData.email)) {
+    if (await doesUserExists(email)) {
       return res.status(400).json({ message: 'Such email already used.' });
     }
-    const hashedPassword = await bcrypt.hash(postData.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await insertRegistrationData({
-      email: postData.email,
+      email: email,
       passwordHash: hashedPassword,
     });
-
-    const email = postData.email;
 
     const token = jwt.sign({ email }, secretKey, { expiresIn: 300 });
 
     return res.status(201).json({ auth: true, token: token });
   } catch (err) {
-    console.log(err);
+    logger.info(err);
     res.status(500).json({
       message: 'Registration failed',
     });
