@@ -14,7 +14,7 @@ const logger = winston.createLogger({
 
 const secretKey = process.env.secretKey || 'SecretTrack';
 
-const insertRegistrationData = async (data) => {
+const createUserData = async (data) => {
   try {
     await UserModel.create(data);
   } catch (err) {
@@ -22,7 +22,7 @@ const insertRegistrationData = async (data) => {
   }
 };
 
-const doesUserExists = async (email) => {
+const doesUserExistsByEmail = async (email) => {
   const inUse = await UserModel.findOne({ email });
 
   if (Object.is(inUse, null)) return false;
@@ -76,9 +76,9 @@ export const login = async (req, res) => {
   }
 };
 
-export const registration = async (req, res) => {
+export const createUser = async (req, res) => {
   try {
-    logger.info(`Attempt to register:`);
+    logger.info(`Attempt to create user:`);
     logger.info(req.body);
 
     const errors = validationResult(req);
@@ -87,12 +87,12 @@ export const registration = async (req, res) => {
 
     const { email, password } = req.body;
 
-    if (await doesUserExists(email)) {
+    if (await doesUserExistsByEmail(email)) {
       return res.status(400).json({ message: 'Such email already used.' });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await insertRegistrationData({
+    await createUserData({
       email: email,
       passwordHash: hashedPassword,
     });

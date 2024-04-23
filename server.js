@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import winston from 'winston';
-
+import * as projectController from './src/controllers/projectController.js';
 import apiRouter from './src/routes/index.js';
 
 import { connectDB } from './db.js';
@@ -24,7 +24,9 @@ const logger = winston.createLogger({
   transports: [new winston.transports.Console()],
 });
 
-app.use('/api/', apiRouter);
+console.log(projectController.isConfigured);
+
+app.use('/api', apiRouter);
 
 // Listening
 

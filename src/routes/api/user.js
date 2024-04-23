@@ -9,6 +9,6 @@ userRouter.get('/auth', userController.userAuth);
 
 userRouter.post('/login', validator.loginValidator(), userController.login);
 
-userRouter.post('/register', validator.registrationValidator(), userController.registration);
+userRouter.post('/createUser', validator.createUserValidator(), userController.createUser);
 
 export default userRouter;
