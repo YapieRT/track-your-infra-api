@@ -29,8 +29,8 @@ const doesUserExistsByEmail = async (email) => {
   else return true;
 };
 
-const loginVerify = async (email, password) => {
-  const user = await UserModel.findOne({ email });
+const signInVerify = async (name, password) => {
+  const user = await UserModel.findOne({ name });
 
   if (!Object.is(user, null)) {
     const match = await bcrypt.compare(password, user.passwordHash);
@@ -40,43 +40,29 @@ const loginVerify = async (email, password) => {
   return false;
 };
 
-export const userAuth = async (req, res) => {
-  const token = req.headers.authorization.split(' ')[1];
-
+export const signIn = async (req, res) => {
   try {
-    const decoded = jwt.verify(token, secretKey);
-    res.json({ auth: true, email: decoded.email, message: `Hello ${decoded.email}!` });
-  } catch (err) {
-    res.status(401).json({ auth: false, message: 'Invalid token' });
-  }
-};
-
-export const login = async (req, res) => {
-  try {
-    logger.info(`Attempt to login:`);
+    logger.info(`Attempt to Sign In:`);
     logger.info(req.body);
 
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { email, password } = req.body;
+    const { name, password } = req.body;
 
-    if (await loginVerify(email, password)) {
-      const email = email;
-      const token = jwt.sign({ email }, secretKey, { expiresIn: 3600 });
-
-      return res.status(200).json({ auth: true, token: token });
-    } else return res.status(400).json({ message: 'Login Failed(wrong password or email).' });
+    if (await signInVerify(name, password)) {
+      return res.status(200).json({ auth: true });
+    } else return res.status(400).json({ message: 'Sign In Failed(wrong password or email).' });
   } catch (err) {
     logger.info(err);
     res.status(500).json({
-      message: 'Login failed',
+      message: 'Sign In failed',
     });
   }
 };
 
-export const createUser = async (req, res) => {
+export const create = async (req, res) => {
   try {
     logger.info(`Attempt to create user:`);
     logger.info(req.body);
@@ -85,14 +71,16 @@ export const createUser = async (req, res) => {
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     if (await doesUserExistsByEmail(email)) {
       return res.status(400).json({ message: 'Such email already used.' });
     }
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     await createUserData({
+      name: name,
       email: email,
       passwordHash: hashedPassword,
     });

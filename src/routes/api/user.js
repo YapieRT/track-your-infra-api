@@ -5,10 +5,8 @@ const userRouter = express.Router();
 import * as userController from '../../controllers/userController.js';
 import * as validator from '../../helpers/validators.js';
 
-userRouter.get('/auth', userController.userAuth);
+userRouter.post('/signin', validator.signInValidator(), userController.signIn);
 
-userRouter.post('/login', validator.loginValidator(), userController.login);
-
-userRouter.post('/createUser', validator.createUserValidator(), userController.createUser);
+userRouter.post('/create', validator.createUserValidator(), userController.create);
 
 export default userRouter;

@@ -7,9 +7,9 @@ export const createUserValidator = () => {
   ];
 };
 
-export const loginValidator = () => {
+export const signInValidator = () => {
   return [
-    body('email', 'Make sure that the email is entered correctly.').isEmail(),
+    body('name', 'Make sure that the email is entered correctly.').not().isEmpty(),
     body('password', 'Make sure the password is entered correctly.').not().isEmpty(),
   ];
 };
