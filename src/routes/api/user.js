@@ -9,4 +9,6 @@ userRouter.post('/signin', validator.signInValidator(), userController.signIn);
 
 userRouter.post('/create', validator.createUserValidator(), userController.create);
 
+userRouter.post('/auth', validator.createUserValidator(), userController.auth);
+
 export default userRouter;

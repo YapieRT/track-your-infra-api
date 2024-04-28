@@ -14,6 +14,8 @@ const logger = winston.createLogger({
 
 const secretKey = process.env.secretKey || 'SecretTrack';
 
+const jwtTokenExpireTime = 30;
+
 const createUserData = async (data) => {
   try {
     await UserModel.create(data);
@@ -52,7 +54,8 @@ export const signIn = async (req, res) => {
     const { name, password } = req.body;
 
     if (await signInVerify(name, password)) {
-      return res.status(200).json({ auth: true });
+      const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
+      return res.status(200).json({ auth: true, token: token });
     } else return res.status(400).json({ message: 'Sign In Failed(wrong password or email).' });
   } catch (err) {
     logger.info(err);
@@ -85,7 +88,7 @@ export const create = async (req, res) => {
       passwordHash: hashedPassword,
     });
 
-    const token = jwt.sign({ email }, secretKey, { expiresIn: 300 });
+    const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
 
     return res.status(201).json({ auth: true, token: token });
   } catch (err) {
@@ -93,5 +96,16 @@ export const create = async (req, res) => {
     res.status(500).json({
       message: 'Registration failed',
     });
+  }
+};
+
+export const auth = async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    jwt.verify(token, secretKey);
+    res.json({ isValid: true });
+  } catch (err) {
+    res.status(401).json({ auth: false, message: 'Invalid token' });
   }
 };
