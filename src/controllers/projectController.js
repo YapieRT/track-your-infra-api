@@ -1,13 +1,6 @@
-import winston from 'winston';
 import mongoose from 'mongoose';
 
 import UserModel from '../database/models/UserModel.js';
-
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.json(),
-  transports: [new winston.transports.Console()],
-});
 
 const findCollection = async (collectionName) => {
   const collections = mongoose.connection.collections;
@@ -38,8 +31,4 @@ export const isConfigured = async (req, res) => {
       message: 'Login failed',
     });
   }
-};
-
-export const test = async (req, res) => {
-  return res.status(200).json({ message: 'Hello there!' });
 };

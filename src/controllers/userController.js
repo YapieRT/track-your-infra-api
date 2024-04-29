@@ -14,7 +14,7 @@ const logger = winston.createLogger({
 
 const secretKey = process.env.secretKey || 'SecretTrack';
 
-const jwtTokenExpireTime = 30;
+const jwtTokenExpireTime = 360;
 
 const createUserData = async (data) => {
   try {
