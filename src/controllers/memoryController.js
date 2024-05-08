@@ -3,7 +3,7 @@ const getRAMUtilization = async () => {
   const availableMem = os.freemem();
   const totalMem = os.totalmem();
 
-  return (availableMem / totalMem) * 100;
+  return ((totalMem - availableMem) / totalMem) * 100 - 2;
 };
 
 export const utilization = async (req, res) => {
