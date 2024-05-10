@@ -1,15 +1,96 @@
 import { exec } from 'child_process';
 import winston from 'winston';
 import os from 'os';
+
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.json(),
   transports: [new winston.transports.Console()],
 });
 
-const callCommand = (command) => {
+const getKernelName = () => {
   return new Promise((resolve, reject) => {
-    exec(command, (error, stdout, stderr) => {
+    exec('uname -s', (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(stderr);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+};
+
+const getKernelVersion = () => {
+  return new Promise((resolve, reject) => {
+    exec('uname -v', (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(stderr);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+};
+
+const getKernelRelease = () => {
+  return new Promise((resolve, reject) => {
+    exec('uname -r', (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(stderr);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+};
+
+const getHardwareArchitectureName = () => {
+  return new Promise((resolve, reject) => {
+    exec('uname -m', (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(stderr);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+};
+
+const getProcesses = () => {
+  return new Promise((resolve, reject) => {
+    exec('ps aux | wc -l', (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(stderr);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+};
+
+const getCpuInfo = () => {
+  return new Promise((resolve, reject) => {
+    exec('lscpu', (error, stdout, stderr) => {
       if (error) {
         reject(error);
         return;
@@ -34,9 +115,10 @@ export const uptime = async (req, res) => {
     });
   }
 };
+
 export const processes = async (req, res) => {
   try {
-    const processes = await callCommand('ps aux | wc -l');
+    const processes = await getProcesses();
 
     return res.status(200).json({ processes });
   } catch (err) {
@@ -45,13 +127,13 @@ export const processes = async (req, res) => {
     });
   }
 };
+
 export const info = async (req, res) => {
   try {
-    const unameCommands = ['uname -s', 'uname -v', 'uname -r', 'uname -m'];
-
-    const [kernelName, kernelVersion, kernelRelease, hardwareArchitectureName] = await Promise.all(
-      unameCommands.map(callCommand)
-    );
+    const kernelName = await getKernelName();
+    const kernelVersion = await getKernelVersion();
+    const kernelRelease = await getKernelRelease();
+    const hardwareArchitectureName = await getHardwareArchitectureName();
 
     const regexPatterns = [
       /Model name:\s+(.*)/,
@@ -61,7 +143,7 @@ export const info = async (req, res) => {
       /CPU min MHz:\s+([\d.]+)/,
     ];
 
-    const cpuSettings = await callCommand('lscpu');
+    const cpuSettings = await getCpuInfo();
 
     const matches = regexPatterns.map((pattern) => {
       const match = cpuSettings.match(pattern);
