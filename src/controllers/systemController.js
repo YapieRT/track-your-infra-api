@@ -104,6 +104,22 @@ const getCpuInfo = () => {
   });
 };
 
+const getDockerInfo = () => {
+  return new Promise((resolve, reject) => {
+    exec('docker version', (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      if (stderr) {
+        reject(stderr);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
+};
+
 export const uptime = async (req, res) => {
   try {
     const uptime = new Date(os.uptime() * 1000).toISOString().slice(11, 19);
@@ -135,7 +151,7 @@ export const info = async (req, res) => {
     const kernelRelease = await getKernelRelease();
     const hardwareArchitectureName = await getHardwareArchitectureName();
 
-    const regexPatterns = [
+    const cpuRegexPatterns = [
       /Model name:\s+(.*)/,
       /Thread\(s\) per core:\s+(\d+)/,
       /Core\(s\) per socket:\s+(\d+)/,
@@ -143,14 +159,24 @@ export const info = async (req, res) => {
       /CPU min MHz:\s+([\d.]+)/,
     ];
 
-    const cpuSettings = await getCpuInfo();
+    const dockerRegexPatterns = [/Version:\s+(.*)/, /API version:\s+(.*)/, /Go version:\s+(.*)/];
 
-    const matches = regexPatterns.map((pattern) => {
+    const cpuSettings = await getCpuInfo();
+    const dockerSettings = await getDockerInfo();
+
+    const cpuMatches = cpuRegexPatterns.map((pattern) => {
       const match = cpuSettings.match(pattern);
       return match ? match[1] : 'NaN';
     });
 
-    const [modelName, threadsPerCore, coresPerSocket, cpuMaxMhz, cpuMinMhz] = matches;
+    const dockerMatches = dockerRegexPatterns.map((pattern) => {
+      const match = dockerSettings.match(pattern);
+      return match ? match[1] : 'NaN';
+    });
+
+    const [modelName, threadsPerCore, coresPerSocket, cpuMaxMhz, cpuMinMhz] = cpuMatches;
+
+    const [dockerVersion, dockerApiVersion, dockerGoVersion] = dockerMatches;
 
     return res.status(200).json({
       system: {
@@ -164,8 +190,13 @@ export const info = async (req, res) => {
           modelName: modelName,
           threadsPerCore: threadsPerCore,
           coresPerSocket: coresPerSocket,
-          cpuMaxMhz: cpuMaxMhz,
-          cpuMinMhz: cpuMinMhz,
+          cpuMaxMhz: cpuMaxMhz.split('.')[0],
+          cpuMinMhz: cpuMinMhz.split('.')[0],
+        },
+        docker: {
+          version: dockerVersion,
+          apiVersion: dockerApiVersion,
+          goVersion: dockerGoVersion,
         },
       },
     });
