@@ -44,9 +44,6 @@ const signInVerify = async (name, password) => {
 
 export const signIn = async (req, res) => {
   try {
-    logger.info(`Attempt to Sign In:`);
-    logger.info(req.body);
-
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });

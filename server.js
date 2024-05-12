@@ -2,14 +2,16 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import winston from 'winston';
-import * as projectController from './src/controllers/projectController.js';
 import apiRouter from './src/routes/index.js';
 
-import { connectDB } from './db.js';
+import { connectDB } from './src/database/db.js';
+
+import { createLogsDirectory } from './src/scripts/logs.js';
 
 // Defining app, app cors, port
 
 connectDB();
+createLogsDirectory();
 
 dotenv.config();
 
@@ -24,11 +26,7 @@ const logger = winston.createLogger({
   transports: [new winston.transports.Console()],
 });
 
-console.log(projectController.isConfigured);
-
 app.use('/api', apiRouter);
-
-// Listening
 
 const PORT = process.env.PORT || 8080;
 
@@ -37,4 +35,9 @@ app.listen(PORT, (err) => {
   if (err) {
     return logger.info(err);
   }
+});
+
+process.on('SIGINT', () => {
+  console.log('Server shutting down...');
+  process.exit(0);
 });
