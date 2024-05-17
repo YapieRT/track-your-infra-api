@@ -1,21 +1,20 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
-const UserSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+const AlarmSchema = new Schema({
   email: {
     type: String,
     required: true,
+  },
+  threshold: {
+    type: Number,
+    required: true,
     unique: true,
   },
-  passwordHash: {
+  type: {
     type: String,
     required: true,
   },
 });
 
-export default UserSchema;
+export default AlarmSchema;

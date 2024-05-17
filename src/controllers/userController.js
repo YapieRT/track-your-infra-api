@@ -1,4 +1,5 @@
 import UserModel from '../database/models/UserModel.js';
+import AlarmModel from '../database/models/AlarmModel.js';
 
 import { validationResult } from 'express-validator';
 
@@ -19,6 +20,14 @@ const jwtTokenExpireTime = 6000;
 const createUserData = async (data) => {
   try {
     await UserModel.create(data);
+  } catch (err) {
+    logger.info(err);
+  }
+};
+
+const createAlarm = async (data) => {
+  try {
+    await AlarmModel.create(data);
   } catch (err) {
     logger.info(err);
   }
@@ -51,8 +60,9 @@ export const signIn = async (req, res) => {
     const { name, password } = req.body;
 
     if (await signInVerify(name, password)) {
+      const user = await UserModel.findOne({ name });
       const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
-      return res.status(200).json({ auth: true, token: token });
+      return res.status(200).json({ auth: true, token: token, email: user.email });
     } else return res.status(400).json({ message: 'Sign In Failed(wrong password or email).' });
   } catch (err) {
     logger.info(err);
@@ -84,6 +94,9 @@ export const create = async (req, res) => {
       email: email,
       passwordHash: hashedPassword,
     });
+
+    await createAlarm({ email: email, type: 'CPU', threshold: 75 });
+    await createAlarm({ email: email, type: 'RAM', threshold: 75 });
 
     const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
 

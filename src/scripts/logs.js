@@ -43,3 +43,15 @@ export const getLastLogs = (filePath, n, callback) => {
     callback(err);
   });
 };
+
+export const containsSystemDirs = (path) => {
+  const systemDirs = ['/etc', '/bin', '/sbin', '/usr/bin', '/usr/sbin', '/root', '/proc', '/sys'];
+
+  for (let i = 0; i < systemDirs.length; i++) {
+    if (path.includes(systemDirs[i])) {
+      return true;
+    }
+  }
+
+  return false;
+};
