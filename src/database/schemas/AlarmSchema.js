@@ -5,14 +5,10 @@ const AlarmSchema = new Schema({
   email: {
     type: String,
     required: true,
-  },
-  threshold: {
-    type: Number,
-    required: true,
     unique: true,
   },
-  type: {
-    type: String,
+  alarms: {
+    type: Object,
     required: true,
   },
 });

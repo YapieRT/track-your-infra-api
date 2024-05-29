@@ -95,8 +95,7 @@ export const create = async (req, res) => {
       passwordHash: hashedPassword,
     });
 
-    await createAlarm({ email: email, type: 'CPU', threshold: 75 });
-    await createAlarm({ email: email, type: 'RAM', threshold: 75 });
+    await createAlarm({ email: email, alarms: { CPU: { threshold: 75 }, RAM: { threshold: 75 } } });
 
     const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
 
