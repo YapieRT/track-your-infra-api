@@ -8,8 +8,8 @@ import cpuRoutes from './api/cpu.js';
 import memoryRoutes from './api/memory.js';
 import systemRoutes from './api/system.js';
 import logsRoutes from './api/logs.js';
-
 import alarmRoutes from './api/alarm.js';
+import emailRoutes from './api/email.js';
 
 router.use('/user', userRoutes);
 
@@ -24,5 +24,7 @@ router.use('/system', systemRoutes);
 router.use('/logs', logsRoutes);
 
 router.use('/alarm', alarmRoutes);
+
+router.use('/email', emailRoutes);
 
 export default router;

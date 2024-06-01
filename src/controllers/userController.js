@@ -40,8 +40,8 @@ const doesUserExistsByEmail = async (email) => {
   else return true;
 };
 
-const signInVerify = async (name, password) => {
-  const user = await UserModel.findOne({ name });
+const signInVerify = async (email, password) => {
+  const user = await UserModel.findOne({ email });
 
   if (!Object.is(user, null)) {
     const match = await bcrypt.compare(password, user.passwordHash);
@@ -57,11 +57,11 @@ export const signIn = async (req, res) => {
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { name, password } = req.body;
+    const { email, password } = req.body;
 
-    if (await signInVerify(name, password)) {
-      const user = await UserModel.findOne({ name });
-      const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
+    if (await signInVerify(email, password)) {
+      const user = await UserModel.findOne({ email });
+      const token = jwt.sign({ email }, secretKey, { expiresIn: jwtTokenExpireTime });
       return res.status(200).json({ auth: true, token: token, email: user.email });
     } else return res.status(400).json({ message: 'Sign In Failed(wrong password or email).' });
   } catch (err) {
@@ -98,7 +98,7 @@ export const create = async (req, res) => {
 
     await createAlarm({ email: email, alarms: { CPU: { threshold: 75 }, RAM: { threshold: 75 } } });
 
-    const token = jwt.sign({ name }, secretKey, { expiresIn: jwtTokenExpireTime });
+    const token = jwt.sign({ email }, secretKey, { expiresIn: jwtTokenExpireTime });
 
     return res.status(201).json({ auth: true, token: token });
   } catch (err) {
