@@ -81,7 +81,7 @@ export const create = async (req, res) => {
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { name, email, password } = req.body;
+    const { name, email, password, admin } = req.body;
 
     if (await doesUserExistsByEmail(email)) {
       return res.status(400).json({ message: 'Such email already used.' });
@@ -93,6 +93,7 @@ export const create = async (req, res) => {
       name: name,
       email: email,
       passwordHash: hashedPassword,
+      admin: admin,
     });
 
     await createAlarm({ email: email, alarms: { CPU: { threshold: 75 }, RAM: { threshold: 75 } } });

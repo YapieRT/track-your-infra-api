@@ -16,6 +16,10 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
+  admin: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 export default UserSchema;

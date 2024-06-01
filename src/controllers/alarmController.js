@@ -37,7 +37,6 @@ export const getAlarms = async (req, res) => {
 
 export const updateAlarms = async (req, res) => {
   const { email, alarms } = req.body;
-  logger.info(req.body);
   if (!email || !alarms) {
     return res.status(400).send({ message: 'Invalid request data' });
   }
