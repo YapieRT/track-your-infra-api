@@ -102,7 +102,7 @@ export const create = async (req, res) => {
 
     return res.status(201).json({ auth: true, token: token });
   } catch (err) {
-    logger.info(err);
+    logger.info('err');
     res.status(500).json({
       message: 'Registration failed',
     });
@@ -115,6 +115,28 @@ export const auth = async (req, res) => {
   try {
     jwt.verify(token, secretKey);
     res.json({ isValid: true });
+  } catch (err) {
+    res.status(401).json({ auth: false, message: 'Invalid token' });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  const { email } = req.body;
+  await UserModel.findOneAndDelete({ email });
+  await AlarmModel.findOneAndDelete({ email });
+  res.json({ message: 'Successfully delete' });
+  try {
+  } catch (err) {
+    res.status(401).json({ message: 'Failed to delete user' });
+  }
+};
+
+export const status = async (req, res) => {
+  const { email } = req.query;
+
+  try {
+    const user = await UserModel.findOne({ email });
+    res.json({ admin: user.admin });
   } catch (err) {
     res.status(401).json({ auth: false, message: 'Invalid token' });
   }

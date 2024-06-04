@@ -16,16 +16,10 @@ export const getAlarms = async (req, res) => {
   try {
     const { email } = req.query;
 
-    const entry = await findAlarms(email);
-
-    const alarmData = {};
-
-    for (const [key, value] of Object.entries(entry.alarms)) {
-      alarmData[key] = value.threshold;
-    }
+    const { alarms } = await findAlarms(email);
 
     res.status(200).json({
-      alarmData,
+      alarms,
     });
   } catch (err) {
     logger.error(err);

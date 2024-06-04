@@ -4,7 +4,7 @@ const emailRouter = express.Router();
 
 import * as emailController from '../../controllers/emailController.js';
 
-emailRouter.post('/registration', emailController.registration);
+emailRouter.post('/invite', emailController.invite);
 
 emailRouter.post('/alarm', emailController.alarm);
 
