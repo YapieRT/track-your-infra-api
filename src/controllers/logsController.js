@@ -13,7 +13,7 @@ export const doesLogsExists = async (req, res) => {
     const { path } = req.query;
 
     if (containsSystemDirs(path)) {
-      res.status(200).json({ logs: 'Access denied' });
+      res.status(200).json({ logs: false });
     } else {
       const fileExists = fs.existsSync(path);
 

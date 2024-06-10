@@ -2,6 +2,10 @@ import winston from 'winston';
 
 import MailService from '../service/mail-service.js';
 
+import { createUserData, createAlarm, doesUserExistsByEmail, signInVerify } from '../scripts/user.js';
+
+import bcrypt from 'bcrypt';
+
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.json(),
@@ -12,17 +16,31 @@ export const invite = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-
     const password = Math.random().toString(36).slice(-8);
 
-    // const mailService = new MailService();
+    const mailService = new MailService();
 
-    // await mailService.sendInvite(email);
+    if (await doesUserExistsByEmail(email)) {
+      return res.status(400).json({ message: 'Such email already used.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await createUserData({
+      email,
+      passwordHash: hashedPassword,
+      admin: false,
+    });
+
+    const alarm = { email, alarms: { CPU: { threshold: 75 }, RAM: { threshold: 75 } } };
+    await createAlarm(alarm);
+
+    await mailService.sendInvite(email, password);
 
     res.status(200).json({
       message: 'Link Successfully sent',
-      password: password,
+      newUserAlarm: alarm,
     });
 
     logger.info('Sending registration data');
@@ -30,7 +48,6 @@ export const invite = async (req, res) => {
     res.status(500).json({
       message: 'Something went wrong failed',
     });
-    console.log(err);
     logger.error(err);
   }
 };

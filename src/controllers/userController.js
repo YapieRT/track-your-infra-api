@@ -3,6 +3,8 @@ import AlarmModel from '../database/models/AlarmModel.js';
 
 import { validationResult } from 'express-validator';
 
+import { createUserData, createAlarm, doesUserExistsByEmail, signInVerify } from '../scripts/user.js';
+
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import winston from 'winston';
@@ -16,40 +18,6 @@ const logger = winston.createLogger({
 const secretKey = process.env.secretKey || 'SecretTrack';
 
 const jwtTokenExpireTime = 6000;
-
-const createUserData = async (data) => {
-  try {
-    await UserModel.create(data);
-  } catch (err) {
-    logger.info(err);
-  }
-};
-
-const createAlarm = async (data) => {
-  try {
-    await AlarmModel.create(data);
-  } catch (err) {
-    logger.info(err);
-  }
-};
-
-const doesUserExistsByEmail = async (email) => {
-  const inUse = await UserModel.findOne({ email });
-
-  if (Object.is(inUse, null)) return false;
-  else return true;
-};
-
-const signInVerify = async (email, password) => {
-  const user = await UserModel.findOne({ email });
-
-  if (!Object.is(user, null)) {
-    const match = await bcrypt.compare(password, user.passwordHash);
-    if (match) return true;
-    else return false;
-  }
-  return false;
-};
 
 export const signIn = async (req, res) => {
   try {
@@ -81,7 +49,7 @@ export const create = async (req, res) => {
 
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-    const { name, email, password, admin } = req.body;
+    const { email, password, admin } = req.body;
 
     if (await doesUserExistsByEmail(email)) {
       return res.status(400).json({ message: 'Such email already used.' });
@@ -90,7 +58,6 @@ export const create = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     await createUserData({
-      name: name,
       email: email,
       passwordHash: hashedPassword,
       admin: admin,

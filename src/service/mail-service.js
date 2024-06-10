@@ -5,7 +5,7 @@ export default class MailService {
     this.mailjet = mailjet.apiConnect(process.env.MJ_APIKEY_PUBLIC, process.env.MJ_APIKEY_PRIVATE);
   }
 
-  async sendInvite(to) {
+  async sendInvite(to, password) {
     const request = this.mailjet.post('send', { version: 'v3.1' }).request({
       Messages: [
         {
@@ -18,11 +18,12 @@ export default class MailService {
               Email: to,
             },
           ],
-          Subject: `Account Activation on ${process.env.API_URL}`,
+          Subject: `Invintation to Track Your Infra`,
           HTMLPart: `
             <div>
-              <h1>Для активації акаунту перейдіть за посиланям</h1>
-              <p>Якщо ви не надавали цієї адреси для реєстрації, то проігноруйте це повідомлення.</p>
+              <h1>You were invited to Track Your Infra</h1>
+              <h3>Follow the https://${process.env.DOMAIN_NAME} link to Sign In</h1>
+              <h3>Password: ${password}</h1>
             </div>
           `,
         },
